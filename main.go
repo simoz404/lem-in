@@ -30,18 +30,33 @@ func (queue *Graph) Pop() string {
 func main() {
 	graph := NewGraph()
 	start := "0"
-	end := "1"
-	edges := []string{"0-4", "0-6", "1-3", "4-3", "5-2", "3-5", "4-2", "2-1", "7-6", "7-2", "7-4", "6-5"}
+	end := "3"
+	edges := []string{"0-1", "0-3", "1-2", "3-2"}
 	for _, v := range edges {
 		s := strings.Split(v, "-")
 		if len(s) == 2 {
 			graph.AddEdge(s[0], s[1])
 		}
 	}
-	graph.Print()
-	prev := graph.Bfs(start, end)
-	fmt.Println(prev)
-	reconstructPath(start, end, prev)
+	var s [][]string
+	fmt.Println(graph.Tunnels)
+	for len(graph.Tunnels) > 0 {
+		prev := graph.Bfs(start, end)
+		fmt.Println("prev: ", prev)
+		m := reconstructPath(start, end, prev)
+		s = append(s, m)
+		fmt.Println(s)
+		if len(m) == 2 {
+			break
+		}
+		for _, v := range m {
+			if v != start && v != end {
+			graph.Delete(v)
+			}
+		}
+	}
+	fmt.Println(graph.Tunnels)
+	fmt.Println(s)
 }
 
 func NewGraph() *Graph {
@@ -59,6 +74,10 @@ func (graph *Graph) Print() {
 	fmt.Println(graph.Tunnels)
 }
 
+func (graph *Graph) Delete(key string) {
+	delete(graph.Tunnels, key)
+}
+
 func (graph *Graph) Bfs(start string, end string) map[string]string {
 	visted := make(map[string]bool)
 	graph.Push(start)
@@ -67,12 +86,13 @@ func (graph *Graph) Bfs(start string, end string) map[string]string {
 	var neighbours []string
 	prev[start] = ""
 	visted[start] = true
-	
+
 	for len(graph.que.content) > 0 {
 		node = graph.Pop()
 		neighbours = graph.Tunnels[node]
 		for _, v := range neighbours {
 			if !visted[v] {
+				fmt.Println(v)
 				graph.Push(v)
 				visted[v] = true
 				prev[v] = node
@@ -82,14 +102,14 @@ func (graph *Graph) Bfs(start string, end string) map[string]string {
 	}
 	return prev
 }
+
 func reconstructPath(s, e string, prev map[string]string) []string {
 	var res []string
-	for i := e ; i != "" ; i = prev[i]{
-		res = append(res, i)
+	for i := e; i != ""; i = prev[i] {
+		res = append([]string{i}, res...)
 	}
 	if prev[s] == s {
 		return nil
 	}
 	return res
 }
-

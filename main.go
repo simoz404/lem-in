@@ -38,25 +38,10 @@ func main() {
 			graph.AddEdge(s[0], s[1])
 		}
 	}
-	var s [][]string
 	fmt.Println(graph.Tunnels)
-	for len(graph.Tunnels) > 0 {
-		prev := graph.Bfs(start, end)
-		fmt.Println("prev: ", prev)
-		m := reconstructPath(start, end, prev)
-		s = append(s, m)
-		fmt.Println(s)
-		if len(m) == 2 {
-			break
-		}
-		for _, v := range m {
-			if v != start && v != end {
-			graph.Delete(v)
-			}
-		}
-	}
-	fmt.Println(graph.Tunnels)
-	fmt.Println(s)
+	prev := graph.Bfs(start, end)
+	m := reconstructPath(start, end, prev)
+	fmt.Println(m)
 }
 
 func NewGraph() *Graph {
@@ -92,7 +77,6 @@ func (graph *Graph) Bfs(start string, end string) map[string]string {
 		neighbours = graph.Tunnels[node]
 		for _, v := range neighbours {
 			if !visted[v] {
-				fmt.Println(v)
 				graph.Push(v)
 				visted[v] = true
 				prev[v] = node

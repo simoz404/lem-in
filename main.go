@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"strings"
 )
 
@@ -11,16 +12,16 @@ type Graph struct {
 }
 
 type Queue struct {
-	content []string
+	content [][]string
 }
 
-func (queue *Graph) Push(x string) {
+func (queue *Graph) Push(x []string) {
 	queue.que.content = append(queue.que.content, x)
 }
 
-func (queue *Graph) Pop() string {
+func (queue *Graph) Pop() []string {
 	if len(queue.que.content) == 0 {
-		return ""
+		return nil
 	}
 	first := queue.que.content[0]
 	queue.que.content = queue.que.content[1:]
@@ -29,10 +30,13 @@ func (queue *Graph) Pop() string {
 
 func main() {
 	graph := NewGraph()
-	start := "0"
-	end := "3"
-	edges := []string{"0-1", "0-3", "1-2", "3-2"}
-	for _, v := range edges {
+	s, _ := os.ReadFile(os.Args[1])
+	str := strings.Split(string(s), "\n")
+	fmt.Println(len(str))
+	start := "1"
+	end := "0"
+	// edges := []string{"0-1", "0-3", "1-2", "3-2"}
+	for _, v := range str {
 		s := strings.Split(v, "-")
 		if len(s) == 2 {
 			graph.AddEdge(s[0], s[1])
@@ -40,8 +44,7 @@ func main() {
 	}
 	fmt.Println(graph.Tunnels)
 	prev := graph.Bfs(start, end)
-	m := reconstructPath(start, end, prev)
-	fmt.Println(m)
+	fmt.Println(prev)
 }
 
 func NewGraph() *Graph {
@@ -63,37 +66,33 @@ func (graph *Graph) Delete(key string) {
 	delete(graph.Tunnels, key)
 }
 
-func (graph *Graph) Bfs(start string, end string) map[string]string {
+func (graph *Graph) Bfs(start string, end string) [][]string {
+	e := []string{start}
+	graph.Push(e)
+	var node []string
+	var neighbors []string
+	var lastnode string
+	var result [][]string
+	var list []string
 	visted := make(map[string]bool)
-	graph.Push(start)
-	prev := make(map[string]string)
-	var node string
-	var neighbours []string
-	prev[start] = ""
-	visted[start] = true
-
 	for len(graph.que.content) > 0 {
 		node = graph.Pop()
-		neighbours = graph.Tunnels[node]
-		for _, v := range neighbours {
-			if !visted[v] {
-				graph.Push(v)
-				visted[v] = true
-				prev[v] = node
+		lastnode = node[len(node)-1]
+		if lastnode == end {
+			result = append(result, node)
+		} else {
+			neighbors = graph.Tunnels[lastnode]
+			for _, v := range neighbors {
+				visted[start] = false 
+				visted[end] = false
+				if !visted[v] {
+					list = node
+					list = append(list, v)
+					graph.Push(list)
+					visted[v] = true
+				}
 			}
 		}
-
 	}
-	return prev
-}
-
-func reconstructPath(s, e string, prev map[string]string) []string {
-	var res []string
-	for i := e; i != ""; i = prev[i] {
-		res = append([]string{i}, res...)
-	}
-	if prev[s] == s {
-		return nil
-	}
-	return res
+	return result
 }
